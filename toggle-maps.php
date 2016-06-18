@@ -2,7 +2,7 @@
 /*
     Plugin Name: Toggle Maps
     Author: Kim Spasaro
-    Verson: 1.0.0
+    Version: 1.0.0
 */
 
 function toggle_maps_register_scripts(){
