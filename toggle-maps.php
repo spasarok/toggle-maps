@@ -1,5 +1,9 @@
 <?php
-/* Plugin Name: Toggle Maps */
+/*
+    Plugin Name: Toggle Maps
+    Author: Kim Spasaro
+    Verson: 1.0.0
+*/
 
 function toggle_maps_register_scripts(){
     wp_register_style( 'toggle_maps', plugins_url('/toggle-maps.css', __FILE__));
@@ -78,11 +82,11 @@ function toggle_maps_list_handler($atts){
                 <div class="toggle-maps-location">
                     <a href="<?php the_permalink(); ?>"><h3><?php the_title(); ?></h3></a>
                     <?php if(get_post_meta(get_the_ID(), 'toggle_maps_address', true)): ?>
-                <p><?php echo get_post_meta(get_the_ID(), 'toggle_maps_address', true); ?><p>
-                        <?php endif; ?>
-                        <?php if(get_post_meta(get_the_ID(), 'toggle_maps_phone', true)): ?>
-                    <p><?php echo get_post_meta(get_the_ID(), 'toggle_maps_phone', true); ?></p>
-                <?php endif; ?>
+                        <p><?php echo get_post_meta(get_the_ID(), 'toggle_maps_address', true); ?><p>
+                    <?php endif; ?>
+                    <?php if(get_post_meta(get_the_ID(), 'toggle_maps_phone', true)): ?>
+                        <p><?php echo get_post_meta(get_the_ID(), 'toggle_maps_phone', true); ?></p>
+                    <?php endif; ?>
                     <?php if(get_post_meta(get_the_ID(), 'toggle_maps_website_link', true)): ?>
                         <p><a href="<?php echo get_post_meta(get_the_ID(), 'toggle_maps_website_link', true); ?>"><?php the_title(); ?> Website</a></p>
                     <?php endif; ?>
