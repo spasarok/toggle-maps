@@ -209,14 +209,6 @@ jQuery(document).ready( function($) {
         return $('.toggle.' + term);
     }
 
-    function addListView(){
-        if(tm.listView){
-            var toggleButton = $('<a href="' + tm.host + '/list-view"><input type="button" class="' + tm.toggle + ' list-view" value="List View"/></a>');
-            $('.' + tm.toggleContainer).append(toggleButton);
-            return $('.toggle.list-view');
-        }
-    }
-
     // Add toggles for toggle-maps
     function addToggles(){
         var toggleGroup = $('#' + tm.mapContainer).append('<div class="' + tm.toggleContainer + '"></div>');
@@ -232,7 +224,6 @@ jQuery(document).ready( function($) {
                 toggleMarkers(tm.termSlugs[$(this).attr('value')]);
             });
         }
-        addListView();
     }
 
     // Toggle category on or off

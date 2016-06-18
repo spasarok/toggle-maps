@@ -36,10 +36,10 @@ function toggle_maps_handler($atts){
     else
         $list_view = false;
 
-    if(get_option('toggle_maps_dev_port'))
-        $dev_port = get_option('toggle_maps_dev_port');
+    if(get_option('toggle_maps_port'))
+        $port = get_option('toggle_maps_port');
     else
-        $dev_port = null;
+        $port = null;
 
     $map_vals = array(
         'single' => $single,
@@ -48,7 +48,7 @@ function toggle_maps_handler($atts){
         'termSlugs' => $term_slugs,
         'termNames' => $term_names,
         'listView' => $list_view,
-        'devPort' => $dev_port
+        'port' => $port
     );
 
     // Localize toggle maps script
@@ -67,47 +67,35 @@ function toggle_maps_list_handler($atts){
     $post = get_post($atts['id']);
 
     // Check if we're mapping a single location
-    if($post->post_type == 'toggle_maps_map')
-        $single = false;
-    else
+    if($post->post_type != 'toggle_maps_map')
         return;
 
     $terms = wp_get_post_terms($post->ID, 'toggle_maps_category');
-    $term_slugs = [];
-    $term_names = [];
-    foreach($terms as $term){
-        $term_slugs[$term->name] = $term->slug;
-        $term_names[$term->slug] = $term->name;
-    }
+    ?>
 
-    if(get_page_by_path('list-view'))
-        $list_view = get_template_directory_uri().'/list-view.php';
-    else
-        $list_view = false;
+    <div class="toggle-maps-list">
+        <?php foreach($terms as $term): ?>
+            <?php $tax_query = array(array('taxonomy' => 'toggle_maps_category', 'terms' => $term->term_id)); ?>
+            <?php $query = new WP_Query(array('tax_query' => $tax_query, 'post_type' => 'toggle_maps_location')); ?>
+            <h2><?php echo $term->name; ?></h2>
 
-    if(get_option('toggle_maps_dev_port'))
-        $dev_port = get_option('toggle_maps_dev_port');
-    else
-        $dev_port = null;
-
-    $map_vals = array(
-        'single' => $single,
-        'id' => $post->ID,
-        'terms' => $terms,
-        'termSlugs' => $term_slugs,
-        'termNames' => $term_names,
-        'listView' => $list_view,
-        'devPort' => $dev_port
-    );
-
-    // Localize toggle maps script
-    wp_enqueue_script('jquery');
-    wp_enqueue_style( 'toggle_maps');
-    wp_enqueue_script('google_maps');
-    wp_enqueue_script( 'toggle_maps');
-    wp_localize_script( 'toggle_maps', 'toggleMaps', $map_vals );
-
-    return '<div id="toggle-map"></div>';
+            <?php while($query->have_posts()): $query->the_post(); ?>
+                <div class="toggle-maps-location">
+                    <a href="<?php the_permalink(); ?>"><h3><?php the_title(); ?></h3></a>
+                    <?php if(get_post_meta(get_the_ID(), 'toggle_maps_address', true)): ?>
+                            <p><?php echo get_post_meta(get_the_ID(), 'toggle_maps_address', true); ?><p>
+                    <?php endif; ?>
+                    <?php if(get_post_meta(get_the_ID(), 'toggle_maps_phone', true)): ?>
+                        <p><?php echo get_post_meta(get_the_ID(), 'toggle_maps_phone', true); ?></p>
+                    <?php endif; ?>
+                    <?php if(get_post_meta(get_the_ID(), 'toggle_maps_website_link', true)): ?>
+                        <p><a href="<?php echo get_post_meta(get_the_ID(), 'toggle_maps_website_link', true); ?>"><?php the_title(); ?> Website</a></p>
+                    <?php endif; ?>
+                </div>
+            <?php endwhile; ?>
+        <?php endforeach; ?>
+    </div>
+<?php
 }
 add_shortcode('toggle-maps-list', 'toggle_maps_list_handler');
 
@@ -175,7 +163,7 @@ add_action('admin_menu', 'toggle_maps_create_menu');
 // Register settings
 function toggle_maps_register_options() {
     register_setting( 'toggle_maps_options_group', 'toggle_maps_google_key' );
-    register_setting( 'toggle_maps_options_group', 'toggle_maps_dev_port' );
+    register_setting( 'toggle_maps_options_group', 'toggle_maps_port' );
     register_setting( 'toggle_maps_options_group', 'toggle_maps_rewrite' );
 }
 
@@ -195,17 +183,20 @@ function toggle_maps_options_page() {
                     <td><input type="text" class="large-text" name="toggle_maps_google_key" value="<?php echo esc_attr( get_option('toggle_maps_google_key') ); ?>" /></td>
                 </tr>
                 <tr valign="top">
-                    <th scope="row">Slug Rewrite</th>
+                    <th scope="row">Locations Slug Rewrite</th>
                     <td><input type="text" class="large-text" name="toggle_maps_rewrite" value="<?php echo esc_attr( get_option('toggle_maps_rewrite') ); ?>" /></td>
                 </tr>
                 <tr valign="top">
-                    <th scope="row">Dev Port or Directory</th>
-                    <td><input type="text" class="large-text" name="toggle_maps_dev_port" value="<?php echo esc_attr( get_option('toggle_maps_dev_port') ); ?>" /></td>
+                    <th scope="row">Port</th>
+                    <td><input type="text" class="large-text" name="toggle_maps_port" value="<?php echo esc_attr( get_option('toggle_maps_port') ); ?>" /></td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row">Path</th>
+                    <td><input type="text" class="large-text" name="toggle_maps_path" value="<?php echo esc_attr( get_option('toggle_maps_path') ); ?>" /></td>
                 </tr>
             </table>
 
             <?php submit_button(); ?>
-
         </form>
     </div>
 <?php }
