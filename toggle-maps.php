@@ -31,15 +31,8 @@ function toggle_maps_handler($atts){
         $term_names[$term->slug] = $term->name;
     }
 
-    if(get_page_by_path('list-view'))
-        $list_view = get_template_directory_uri().'/list-view.php';
-    else
-        $list_view = false;
-
-    if(get_option('toggle_maps_port'))
-        $port = get_option('toggle_maps_port');
-    else
-        $port = null;
+    get_option('toggle_maps_port') ? $port = get_option('toggle_maps_port') : $port = null;
+    get_option('toggle_maps_path') ? $path = get_option('toggle_maps_path') : $path = null;
 
     $map_vals = array(
         'single' => $single,
@@ -47,8 +40,8 @@ function toggle_maps_handler($atts){
         'terms' => $terms,
         'termSlugs' => $term_slugs,
         'termNames' => $term_names,
-        'listView' => $list_view,
-        'port' => $port
+        'port' => $port,
+        'path' => $path
     );
 
     // Localize toggle maps script
@@ -64,6 +57,7 @@ add_shortcode('toggle-maps', 'toggle_maps_handler');
 
 // Create toggle maps shortcode and enqueue scripts
 function toggle_maps_list_handler($atts){
+
     $post = get_post($atts['id']);
 
     // Check if we're mapping a single location
@@ -71,6 +65,7 @@ function toggle_maps_list_handler($atts){
         return;
 
     $terms = wp_get_post_terms($post->ID, 'toggle_maps_category');
+    ob_start();
     ?>
 
     <div class="toggle-maps-list">
@@ -83,11 +78,11 @@ function toggle_maps_list_handler($atts){
                 <div class="toggle-maps-location">
                     <a href="<?php the_permalink(); ?>"><h3><?php the_title(); ?></h3></a>
                     <?php if(get_post_meta(get_the_ID(), 'toggle_maps_address', true)): ?>
-                            <p><?php echo get_post_meta(get_the_ID(), 'toggle_maps_address', true); ?><p>
-                    <?php endif; ?>
-                    <?php if(get_post_meta(get_the_ID(), 'toggle_maps_phone', true)): ?>
-                        <p><?php echo get_post_meta(get_the_ID(), 'toggle_maps_phone', true); ?></p>
-                    <?php endif; ?>
+                <p><?php echo get_post_meta(get_the_ID(), 'toggle_maps_address', true); ?><p>
+                        <?php endif; ?>
+                        <?php if(get_post_meta(get_the_ID(), 'toggle_maps_phone', true)): ?>
+                    <p><?php echo get_post_meta(get_the_ID(), 'toggle_maps_phone', true); ?></p>
+                <?php endif; ?>
                     <?php if(get_post_meta(get_the_ID(), 'toggle_maps_website_link', true)): ?>
                         <p><a href="<?php echo get_post_meta(get_the_ID(), 'toggle_maps_website_link', true); ?>"><?php the_title(); ?> Website</a></p>
                     <?php endif; ?>
@@ -96,6 +91,7 @@ function toggle_maps_list_handler($atts){
         <?php endforeach; ?>
     </div>
 <?php
+    return ob_get_clean();
 }
 add_shortcode('toggle-maps-list', 'toggle_maps_list_handler');
 
@@ -164,6 +160,7 @@ add_action('admin_menu', 'toggle_maps_create_menu');
 function toggle_maps_register_options() {
     register_setting( 'toggle_maps_options_group', 'toggle_maps_google_key' );
     register_setting( 'toggle_maps_options_group', 'toggle_maps_port' );
+    register_setting( 'toggle_maps_options_group', 'toggle_maps_path' );
     register_setting( 'toggle_maps_options_group', 'toggle_maps_rewrite' );
 }
 
@@ -267,7 +264,7 @@ function toggle_maps_location_meta_callback () {
     echo '<input type="text" name="toggle_maps_longitude" value="' . $longitude . '" class="widefat" />';
 
     $zoom = get_post_meta($post->ID, 'toggle_maps_zoom', true);
-    echo '<label>Zoom</label>';
+    echo '<label>Zoom (default 14)</label>';
     echo '<input type="text" name="toggle_maps_zoom" value="' . $zoom . '" class="widefat" />';
 
     echo '<label>Shortcode</label>';
@@ -290,8 +287,11 @@ function toggle_maps_map_meta_callback () {
     echo '<label>Zoom</label>';
     echo '<input type="text" name="toggle_maps_zoom" value="' . $zoom . '" class="widefat" />';
 
-    echo '<label>Shortcode</label>';
-    echo '<p>[toggle-maps id='.$post->ID.']</p>';
+    echo '<label>Map Shortcode</label>';
+    echo '<p>[toggle-maps id="'.$post->ID.'"]</p>';
+
+    echo '<label>List Shortcode</label>';
+    echo '<p>[toggle-maps-list id="'.$post->ID.'"]</p>';
 }
 
 // Save toggle maps meta

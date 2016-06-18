@@ -13,12 +13,14 @@ jQuery(document).ready( function($) {
         single: toggleMaps.single,
         terms: toggleMaps.terms,
         termNames: toggleMaps.termNames,
-        termSlugs: toggleMaps.termSlugs,
-        listView: toggleMaps.listView
+        termSlugs: toggleMaps.termSlugs
     }
 
-    if(toggleMaps.devPort)
-        tm.host += toggleMaps.devPort;
+    if(toggleMaps.port)
+        tm.host += ':' + toggleMaps.port;
+
+    if(toggleMaps.path)
+        tm.host += '/' + toggleMaps.path;
 
     initializeMap();
 
